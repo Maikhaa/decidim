@@ -89,7 +89,7 @@ module Decidim
     end
 
     def self_and_ancestors
-      self.class.where("#{self.class.table_name}.parents_path @> ?", parents_path).order("string_to_array(#{self.class.table_name}.parents_path::text, '.')")
+      self.class.where("#{self.class.table_name}.parents_path @> ?", parents_path).order(Arel.sql("string_to_array(#{self.class.table_name}.parents_path::text, '.')"))
     end
 
     def ancestors
