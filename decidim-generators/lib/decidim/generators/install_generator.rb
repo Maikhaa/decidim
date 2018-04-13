@@ -99,7 +99,7 @@ module Decidim
       end
 
       def copy_migrations
-        rails "railties:install:migrations"
+        rails "decidim:upgrade"
         recreate_db if options[:recreate_db]
       end
 
