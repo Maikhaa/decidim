@@ -18,6 +18,41 @@ module Decidim
   end
 end
 
+#
+# Monkeypatch to try to fix capybara server boot flakyness
+#
+module Capybara
+  class Server
+    def wait_for_pending_requests
+      start_time = Capybara::Helpers.monotonic_time
+      while pending_requests?
+        raise "Requests did not finish in 60 seconds" if (Capybara::Helpers.monotonic_time - start_time) > 60
+
+        sleep 0.01
+      end
+    end
+
+    def boot
+      unless responsive?
+        Capybara::Server.ports[port_key] = port
+
+        @server_thread = Thread.new do
+          Capybara.server.call(middleware, port, host)
+        end
+
+        start_time = Capybara::Helpers.monotonic_time
+        until responsive?
+          raise "Rack application timed out during boot" if (Capybara::Helpers.monotonic_time - start_time) > 60
+
+          @server_thread.join(0.1)
+        end
+      end
+
+      self
+    end
+  end
+end
+
 Capybara.register_driver :headless_chrome do |app|
   options = ::Selenium::WebDriver::Chrome::Options.new
   options.args << "--headless"
