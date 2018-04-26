@@ -56,7 +56,7 @@ module Decidim
     end
 
     def scope_path
-      resource_locator(model).index(filter: { scope_id: model.scope.id })
+      resource_locator(model).index(filter: { scope_id: [model.scope.id] })
     end
   end
 end
